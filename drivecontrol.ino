@@ -41,6 +41,16 @@ void dispatch_packet(int length, byte* packet) {
     case 0x30:
       cmd_joystick(length, packet);
       break;
+    case 0x40:
+      cmd_calibrate(length, packet);
+      break;
+    case 0x41:
+      cmd_get_calibration();
+      break;
+    case 0xF0:
+      // soft stop
+      joystickCenter();
+      break;
     default:
       break;
   }
@@ -58,6 +68,35 @@ void cmd_joystick(int length, byte* packet) {
   return;
 }
 
+void cmd_calibrate(int length, byte* packet) {
+  switch (packet[3]) {
+    case 0x00:
+      // Set x center
+      x_center = packet[4];
+      joystickCenter();
+      break;
+    case 0x01:
+      // set y center
+      y_center = packet[4];
+      joystickCenter();
+      break;
+    case 0x10:
+      // Write calibration to EEPROM
+      writeCalibration();
+      break;
+  }
+}
+
+void cmd_get_calibration() {
+  byte data[5];
+  data[0] = 0x41;
+  data[1] = x_center;
+  data[2] = y_center;
+  data[3] = eeprom_x;
+  data[4] = eeprom_y;
+  link.sendData(5, data);
+}
+
 void loadCalibration() {
   byte eeprom_magic = EEPROM.read(0);
   if (eeprom_magic = 0x23) {
@@ -73,4 +112,17 @@ void loadCalibration() {
     x_center = x_def;
     y_center = y_def;
   }
+}
+
+void writeCalibration() {
+  EEPROM.write(1, x_center);
+  eeprom_x = x_center;
+  EEPROM.write(2, y_center);
+  eeprom_y = y_center;
+  EEPROM.write(0, 0x23);
+}
+
+void joystickCenter() {
+  analogWrite(P_JOY_X, x_center);
+  analogWrite(P_JOY_Y, y_center);
 }
