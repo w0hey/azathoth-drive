@@ -56,7 +56,7 @@ void Link::service() {
     packet[pos] = recv;
     
     // check if we're done with this packet
-    if (pos == len - 1) {
+    if (pos == len + 1) {
       callback(len, packet);
       pos = 0;
       len = 0;
@@ -89,7 +89,7 @@ void Link::sendData(int size, byte data[]) {
 // adds a packet header to the provided data for transmission
 void Link::buildPacket(byte size, byte data[]) {
   packet_out[0] = 0x7e; // start byte
-  packet_out[1] = size + 2; // Length including header
+  packet_out[1] = size; // Length NOT including header
   for (int i = 0; i <= size; i++) {
     packet_out[2 + i] = data[i];
   }
