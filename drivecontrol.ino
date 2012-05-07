@@ -3,6 +3,13 @@
 #include "pinout.h"
 #include "link.h"
 
+// Magic number to verify that *something* is stored in EEPROM
+#define EEPROM_MAGIC 0x23
+// EEPROM addresses
+#define ADDR_MAGIC  0
+#define ADDR_X      1
+#define ADDR_Y      2
+
 // Default calibration values
 const byte x_def = 127;
 const byte y_def = 127;
@@ -98,11 +105,11 @@ void cmd_get_calibration() {
 }
 
 void loadCalibration() {
-  byte eeprom_magic = EEPROM.read(0);
-  if (eeprom_magic == 0x23) {
+  byte eeprom_magic = EEPROM.read(ADDR_MAGIC);
+  if (eeprom_magic == EEPROM_MAGIC) {
     // EEPROM has values stored
-    eeprom_x = EEPROM.read(1);
-    eeprom_y = EEPROM.read(2);
+    eeprom_x = EEPROM.read(ADDR_X);
+    eeprom_y = EEPROM.read(ADDR_Y);
     x_center = eeprom_x;
     y_center = eeprom_y;
   }
@@ -115,11 +122,12 @@ void loadCalibration() {
 }
 
 void writeCalibration() {
-  EEPROM.write(1, x_center);
+  EEPROM.write(ADDR_X, x_center);
   eeprom_x = x_center;
-  EEPROM.write(2, y_center);
+  EEPROM.write(ADDR_Y, y_center);
   eeprom_y = y_center;
-  EEPROM.write(0, 0x23);
+  // Store a magic number so we can tell if EEPROM is "empty"
+  EEPROM.write(ADDR_MAGIC, EEPROM_MAGIC);
 }
 
 void joystickCenter() {
