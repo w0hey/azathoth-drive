@@ -99,7 +99,7 @@ void cmd_get_calibration() {
 
 void loadCalibration() {
   byte eeprom_magic = EEPROM.read(0);
-  if (eeprom_magic = 0x23) {
+  if (eeprom_magic == 0x23) {
     // EEPROM has values stored
     eeprom_x = EEPROM.read(1);
     eeprom_y = EEPROM.read(2);
