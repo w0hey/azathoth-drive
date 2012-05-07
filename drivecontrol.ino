@@ -1,4 +1,5 @@
 #include <EEPROM.h>
+#include <TimedAction.h>
 
 #include "pinout.h"
 #include "link.h"
@@ -20,6 +21,8 @@ byte eeprom_y = 0;
 byte x_center = 0;
 byte y_center = 0;
 
+// TimedAction "thread" for the safety timer. Set to 1 second by default
+TimedAction timeoutAction = TimedAction(1000, timeout);
 
 void setup() {
   // Adjust time 1 for higher frequency PWM
@@ -66,12 +69,16 @@ void dispatch_packet(int length, byte* packet) {
 void cmd_joystick(int length, byte* packet) {
   // Expects two signed 8-bit values, indicating the desired joystick
   // position relative to center.
+  // TODO: This really needs some way to limit output to a defined range,
+  //       as voltages outside 1-4V are detected as a joystick fault.
   char xcmd = packet[3];
   char ycmd = packet[4];
   byte xpos = x_center + xcmd;
   byte ypos = y_center + ycmd;
   analogWrite(P_JOY_X, xpos);
   analogWrite(P_JOY_Y, ypos);
+  // reset the safety timer
+  timeoutAction.reset();
   return;
 }
 
@@ -133,4 +140,8 @@ void writeCalibration() {
 void joystickCenter() {
   analogWrite(P_JOY_X, x_center);
   analogWrite(P_JOY_Y, y_center);
+}
+
+void timeout() {
+  joystickCenter();
 }
