@@ -4,6 +4,8 @@
 #include "pinout.h"
 #include "link.h"
 
+#define E_MALLOC 0
+
 // Magic number to verify that *something* is stored in EEPROM
 #define EEPROM_MAGIC 0x23
 // EEPROM addresses
@@ -47,12 +49,20 @@ void serialEvent() {
 }
 
 void dispatch_packet(int length, byte* packet) {
-  switch (packet[2]) {
+  byte len = packet[1] - 1; // we don't need the first payload byte
+  byte cmd = packet[2];
+  byte *data = (byte*) malloc((len) * sizeof(byte));
+  if (data == NULL) {
+    handleError(E_MALLOC);
+    return;
+  }
+  memcpy(data, packet + 3, len);
+  switch (cmd) {
     case 0x30:
-      cmd_joystick(length, packet);
+      cmd_joystick(len, data);
       break;
     case 0x40:
-      cmd_calibrate(length, packet);
+      cmd_calibrate(len, data);
       break;
     case 0x41:
       cmd_get_calibration();
@@ -66,13 +76,13 @@ void dispatch_packet(int length, byte* packet) {
   }
 }
 
-void cmd_joystick(int length, byte* packet) {
+void cmd_joystick(int length, byte* data) {
   // Expects two signed 8-bit values, indicating the desired joystick
   // position relative to center.
   // TODO: This really needs some way to limit output to a defined range,
   //       as voltages outside 1-4V are detected as a joystick fault.
-  char xcmd = packet[3];
-  char ycmd = packet[4];
+  char xcmd = data[0];
+  char ycmd = data[1];
   byte xpos = x_center + xcmd;
   byte ypos = y_center + ycmd;
   analogWrite(P_JOY_X, xpos);
@@ -82,16 +92,16 @@ void cmd_joystick(int length, byte* packet) {
   return;
 }
 
-void cmd_calibrate(int length, byte* packet) {
-  switch (packet[3]) {
+void cmd_calibrate(int length, byte* data) {
+  switch (data[0]) {
     case 0x00:
       // Set x center
-      x_center = packet[4];
+      x_center = data[1];
       joystickCenter();
       break;
     case 0x01:
       // set y center
-      y_center = packet[4];
+      y_center = data[1];
       joystickCenter();
       break;
     case 0x10:
@@ -144,4 +154,7 @@ void joystickCenter() {
 
 void timeout() {
   joystickCenter();
+}
+
+void handleError(int errcode) {
 }
