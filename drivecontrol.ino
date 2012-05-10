@@ -75,6 +75,7 @@ void dispatch_packet(int length, byte* packet) {
     default:
       break;
   }
+  free(data);
 }
 
 void cmd_joystick(int length, byte* data) {
