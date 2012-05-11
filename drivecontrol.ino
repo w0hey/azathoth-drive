@@ -19,7 +19,8 @@ void setup() {
   // Adjust timer 1 for higher frequency PWM
   TCCR1B = TCCR1B & 0b11111000 | 0x01; // 31250 Hz
   Serial.begin(115200);
-  link.sendData(1, 0x01); // Let the controller know we're here
+  byte data[1] = {0x01};
+  link.sendData(1, data); // Let the controller know we're here
 }
 
 void loop() {
