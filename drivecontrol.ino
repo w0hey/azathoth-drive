@@ -5,7 +5,9 @@
 #include "link.h"
 #include "drive.h"
 
-#define E_MALLOC 0
+#define E_MALLOC 0 // A malloc failed (out of memory?)
+#define E_TIMEOUT 20 // Safety timer expired
+#define E_WTF 90 // Received an unknown command
 
 Link link = Link(dispatch_packet);
 Drive drive = Drive();
@@ -17,7 +19,7 @@ void setup() {
   // Adjust timer 1 for higher frequency PWM
   TCCR1B = TCCR1B & 0b11111000 | 0x01; // 31250 Hz
   Serial.begin(115200);
-
+  link.sendData(1, 0x01); // Let the controller know we're here
 }
 
 void loop() {
@@ -58,6 +60,7 @@ void dispatch_packet(int length, byte* packet) {
       drive.center();
       break;
     default:
+      handleError(E_WTF);
       break;
   }
   free(data);
@@ -105,6 +108,7 @@ void cmd_get_calibration() {
 
 void timeout() {
   drive.center();
+  handleError(E_TIMEOUT);
 }
 
 void handleError(byte errcode) {
