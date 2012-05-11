@@ -14,10 +14,8 @@ Drive drive = Drive();
 TimedAction timeoutAction = TimedAction(1000, timeout);
 
 void setup() {
-  // Adjust time 1 for higher frequency PWM
+  // Adjust timer 1 for higher frequency PWM
   TCCR1B = TCCR1B & 0b11111000 | 0x01; // 31250 Hz
-  pinMode(P_JOY_X, OUTPUT);
-  pinMode(P_JOY_Y, OUTPUT);
   Serial.begin(115200);
 
 }
@@ -35,12 +33,16 @@ void serialEvent() {
 void dispatch_packet(int length, byte* packet) {
   byte len = packet[1] - 1; // we don't need the first payload byte
   byte cmd = packet[2];
+  
   byte *data = (byte*) malloc((len) * sizeof(byte));
+  
   if (data == NULL) {
     handleError(E_MALLOC);
     return;
   }
+  // copy only the payload to a new array
   memcpy(data, packet + 3, len);
+  
   switch (cmd) {
     case 0x30:
       cmd_joystick(len, data);
