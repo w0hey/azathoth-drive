@@ -100,10 +100,7 @@ void cmd_get_calibration() {
   byte* values = drive.getCalibration();
   byte data[5];
   data[0] = 0x41;
-  data[1] = values[0];
-  data[2] = values[1];
-  data[3] = values[2];
-  data[4] = values[3];
+  memcpy(values, &data[1], sizeof(byte) * 4);
   link.sendData(5, data);
 }
 
