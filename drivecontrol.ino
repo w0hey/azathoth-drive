@@ -105,5 +105,9 @@ void timeout() {
   drive.center();
 }
 
-void handleError(int errcode) {
+void handleError(byte errcode) {
+  byte data[2];
+  data[0] = 0xee;
+  data[1] = errcode;
+  link.sendData(2, data);
 }
