@@ -5,9 +5,9 @@
 #include "link.h"
 #include "drive.h"
 
-#define E_MALLOC 0 // A malloc failed (out of memory?)
-#define E_TIMEOUT 20 // Safety timer expired
-#define E_WTF 90 // Received an unknown command
+#define E_MALLOC 0x00 // A malloc failed (out of memory?)
+#define E_TIMEOUT 0x20 // Safety timer expired
+#define E_WTF 0x90 // Received an unknown command
 
 Link link = Link(dispatch_packet);
 Drive drive = Drive();
