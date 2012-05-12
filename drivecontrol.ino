@@ -21,6 +21,7 @@ void setup() {
   Serial.begin(115200);
   byte data[1] = {0x01};
   link.sendData(1, data); // Let the controller know we're here
+  timeoutAction.disable(); // disable safety timer until needed
 }
 
 void loop() {
@@ -74,6 +75,12 @@ void cmd_joystick(int length, byte* data) {
   //       as voltages outside 1-4V are detected as a joystick fault.
   char xpos = data[0];
   char ypos = data[1];
+  
+  if ((xpos | ypos) != 0) {
+    timeoutAction.disable();
+  }
+  else {timeoutAction.enable();}
+  
   drive.setPosition(xpos, ypos);
   timeoutAction.reset();
   return;
