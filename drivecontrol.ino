@@ -17,6 +17,8 @@
 Link link = Link(dispatch_packet);
 Drive drive = Drive();
 
+boolean sendUpdates = true;
+
 // TimedAction "thread" for the safety timer. Set to 1 second by default
 TimedAction timeoutAction = TimedAction(1000, timeout);
 
@@ -123,6 +125,20 @@ void timeout() {
 }
 
 void driveStateChange() {
+  if (!sendUpdates) {
+    return;
+  }
+  char *pos = drive.getPosition();
+  byte *raw = drive.getRawPosition();
+  byte status = drive.getStatus();
+  byte data[6];
+  data[0] = 0x42;
+  data[1] = status;
+  data[2] = pos[0];
+  data[3] = pos[1];
+  data[4] = raw[0];
+  data[5] = raw[1];
+  link.sendData(6, data);
 }
 
 void handleError(byte errcode) {
