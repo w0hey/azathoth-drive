@@ -77,9 +77,9 @@ void cmd_joystick(int length, byte* data) {
   char ypos = data[1];
   
   if ((xpos | ypos) != 0) {
-    timeoutAction.disable();
+    timeoutAction.enable();
   }
-  else {timeoutAction.enable();}
+  else {timeoutAction.disable();}
   
   drive.setPosition(xpos, ypos);
   timeoutAction.reset();
