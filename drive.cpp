@@ -4,6 +4,7 @@
 #include "pinout.h"
 
 Drive::Drive() {
+  status = 0;
   if (!readCalibration()) {
     x_center = X_DEFAULT;
     y_center = Y_DEFAULT;
@@ -55,6 +56,12 @@ void Drive::setPosition(char x, char y) {
   y_value = y_center + y_position;
   analogWrite(P_JOY_X, x_value);
   analogWrite(P_JOY_Y, y_value);
+  // quick test to see if either value is nonzero
+  if (x || y) {
+    status = status | STATUS_MOVING;
+  } else {
+    status = status & (~STATUS_MOVING);
+  }
 }
 
 // return the simulated joystick to center
@@ -79,6 +86,34 @@ byte* Drive::getRawPosition() {
   val[1] = y_value;
   return val;
 }
+
+byte Drive::getStatus() {
+  return status;
+}
+
+// do some status checks
+void Drive::update(void callback()) {
+  byte prevstate = status;
+  if (digitalRead(P_ESTOP_IN) == HIGH) {
+    status |= STATUS_ESTOP_IN;
+  }
+  else {
+    status &= (~STATUS_ESTOP_IN);
+  }
+  
+  if (digitalRead(P_SELECT_IN) == HIGH) {
+    status |= STATUS_SELECT_IN;
+  }
+  else {
+    status &= (~STATUS_SELECT_IN);
+  }
+  
+  if (status != prevstate) {
+    // notify that state changed
+    callback();
+  }
+}
+
 
 // get the current calibration values
 // returns a pointer to a four-element array

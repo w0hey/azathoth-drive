@@ -13,6 +13,13 @@
 #define X_DEFAULT 127
 #define Y_DEFAULT 127
 
+// bitmasks for the status byte
+#define STATUS_ESTOP_IN 0x01
+#define STATUS_ESTOP_OUT 0x02
+#define STATUS_SELECT_IN 0x04
+#define STATUS_SELECT_OUT 0x08
+#define STATUS_MOVING 0x10
+
 class Drive {
   public:
     Drive();
@@ -25,8 +32,11 @@ class Drive {
     char* getPosition();
     byte* getRawPosition();
     byte* getCalibration();
+    byte getStatus();
+    void update(void (*callback)());
     
   private:
+    byte status;
     byte eeprom_x;
     byte eeprom_y;
     byte x_center;

@@ -31,6 +31,7 @@ void setup() {
 
 void loop() {
   timeoutAction.check();
+  drive.update(driveStateChange);
   return;
   
 }
@@ -119,6 +120,9 @@ void cmd_get_calibration() {
 void timeout() {
   drive.center();
   handleError(E_TIMEOUT);
+}
+
+void driveStateChange() {
 }
 
 void handleError(byte errcode) {
