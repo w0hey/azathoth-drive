@@ -9,6 +9,11 @@
 #define E_TIMEOUT 0x20 // Safety timer expired
 #define E_WTF 0x90 // Received an unknown command
 
+#define CMD_JOYSTICK 0x30
+#define CMD_CALIBRATE 0x40
+#define CMD_GET_CALIBRATION 0x41
+#define CMD_SOFTSTOP 0xF0
+
 Link link = Link(dispatch_packet);
 Drive drive = Drive();
 
@@ -48,16 +53,16 @@ void dispatch_packet(int length, byte* packet) {
   memcpy(data, packet + 3, len);
   
   switch (cmd) {
-    case 0x30:
+    case CMD_JOYSTICK:
       cmd_joystick(len, data);
       break;
-    case 0x40:
+    case CMD_CALIBRATE:
       cmd_calibrate(len, data);
       break;
-    case 0x41:
+    case CMD_GET_CALIBRATION:
       cmd_get_calibration();
       break;
-    case 0xF0:
+    case CMD_SOFTSTOP:
       // soft stop
       drive.center();
       break;
