@@ -14,6 +14,10 @@
 #define CMD_GET_CALIBRATION 0x41
 #define CMD_SOFTSTOP 0xF0
 
+#define RESP_CALIBRATION 0x41
+#define RESP_STATUS 0x42
+#define RESP_ERROR 0xEE
+
 Link link = Link(dispatch_packet);
 Drive drive = Drive();
 
@@ -114,7 +118,7 @@ void cmd_calibrate(int length, byte* data) {
 void cmd_get_calibration() {
   byte* values = drive.getCalibration();
   byte data[5];
-  data[0] = 0x41;
+  data[0] = RESP_CALIBRATION;
   memcpy(data + 1, values, sizeof(byte) * 4);
   link.sendData(5, data);
 }
@@ -132,7 +136,7 @@ void driveStateChange() {
   byte *raw = drive.getRawPosition();
   byte status = drive.getStatus();
   byte data[6];
-  data[0] = 0x42;
+  data[0] = RESP_STATUS;
   data[1] = status;
   data[2] = pos[0];
   data[3] = pos[1];
@@ -143,7 +147,7 @@ void driveStateChange() {
 
 void handleError(byte errcode) {
   byte data[2];
-  data[0] = 0xee;
+  data[0] = RESP_ERROR;
   data[1] = errcode;
   link.sendData(2, data);
 }
