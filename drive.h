@@ -22,7 +22,7 @@
 
 class Drive {
   public:
-    Drive();
+    Drive(void (*func)());
     void setXCenter(byte);
     void setYCenter(byte);
     void storeCalibration();
@@ -33,7 +33,7 @@ class Drive {
     byte* getRawPosition();
     byte* getCalibration();
     byte getStatus();
-    void update(void (*callback)());
+    void update();
     
   private:
     byte status;
@@ -46,6 +46,7 @@ class Drive {
     char x_position;
     char y_position;
     boolean readCalibration();
+    void (*callback)();
 };
 
 

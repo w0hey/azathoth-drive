@@ -3,7 +3,8 @@
 #include "drive.h"
 #include "pinout.h"
 
-Drive::Drive() {
+Drive::Drive(void (*func)()) {
+  callback = func;
   status = 0;
   if (!readCalibration()) {
     x_center = X_DEFAULT;
@@ -62,6 +63,7 @@ void Drive::setPosition(char x, char y) {
   } else {
     status = status & (~STATUS_MOVING);
   }
+  callback();
 }
 
 // return the simulated joystick to center
@@ -92,7 +94,7 @@ byte Drive::getStatus() {
 }
 
 // do some status checks
-void Drive::update(void callback()) {
+void Drive::update() {
   byte prevstate = status;
   if (digitalRead(P_ESTOP_IN) == HIGH) {
     status |= STATUS_ESTOP_IN;

@@ -19,7 +19,7 @@
 #define RESP_ERROR 0xEE
 
 Link link = Link(dispatch_packet);
-Drive drive = Drive();
+Drive drive = Drive(driveStateChange);
 
 boolean sendUpdates = true;
 
@@ -37,7 +37,7 @@ void setup() {
 
 void loop() {
   timeoutAction.check();
-  drive.update(driveStateChange);
+  drive.update();
   return;
   
 }
