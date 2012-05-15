@@ -25,6 +25,7 @@ boolean sendUpdates = true;
 
 // TimedAction "thread" for the safety timer. Set to 1 second by default
 TimedAction timeoutAction = TimedAction(1000, timeout);
+TimedAction driveAction = TimedAction(500, driveUpdate);
 
 void setup() {
   // Adjust timer 1 for higher frequency PWM
@@ -37,7 +38,7 @@ void setup() {
 
 void loop() {
   timeoutAction.check();
-  drive.update();
+  driveAction.check();
   return;
   
 }
@@ -126,6 +127,10 @@ void cmd_get_calibration() {
 void timeout() {
   drive.center();
   handleError(E_TIMEOUT);
+}
+
+void driveUpdate() {
+  drive.update();
 }
 
 void driveStateChange() {

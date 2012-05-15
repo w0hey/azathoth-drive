@@ -63,7 +63,6 @@ void Drive::setPosition(char x, char y) {
   } else {
     status = status & (~STATUS_MOVING);
   }
-  callback();
 }
 
 // return the simulated joystick to center
