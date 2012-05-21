@@ -6,11 +6,6 @@
 #include "link.h"
 #include "drive.h"
 
-#define CMD_JOYSTICK 0x30
-#define CMD_CALIBRATE 0x40
-#define CMD_GET_CALIBRATION 0x41
-#define CMD_SOFTSTOP 0xF0
-
 #define RESP_CALIBRATION 0x41
 #define RESP_STATUS 0x42
 #define RESP_ERROR 0xEE
