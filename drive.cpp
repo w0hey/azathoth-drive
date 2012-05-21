@@ -81,14 +81,14 @@ void Drive::disable() {
 }
 
 void Drive::estop() {
-  digitalWrite(P_ESTOP_OUT, HIGH);
+  digitalWrite(P_ESTOP_OUT, LOW);
   status = status | STATUS_ESTOP_OUT;
   center();
 }
 
 void Drive::reset() {
   center();
-  digitalWrite(P_ESTOP_OUT, LOW);
+  digitalWrite(P_ESTOP_OUT, HIGH);
   status = status & (~STATUS_ESTOP_OUT);
 }
 
