@@ -112,6 +112,9 @@ void Link::buildPacket(byte size, byte data[]) {
 void Link::dispatch(byte length, byte* packet) {
   byte cmd = packet[2];
   byte len = packet[1] - 1;
+  // we copy the packet payload minus the first byte, since
+  // the function we call doesn't need to know the original
+  // command byte.
   byte *data = (byte*)malloc(len * sizeof(byte));
   if (data == NULL){
     // malloc failed

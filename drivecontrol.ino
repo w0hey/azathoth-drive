@@ -2,12 +2,9 @@
 #include <TimedAction.h>
 
 #include "pinout.h"
+#include "errors.h"
 #include "link.h"
 #include "drive.h"
-
-#define E_MALLOC 0x00 // A malloc failed (out of memory?)
-#define E_TIMEOUT 0x20 // Safety timer expired
-#define E_WTF 0x90 // Received an unknown command
 
 #define CMD_JOYSTICK 0x30
 #define CMD_CALIBRATE 0x40
@@ -18,10 +15,10 @@
 #define RESP_STATUS 0x42
 #define RESP_ERROR 0xEE
 
-Link link = Link(dispatch_packet);
-Drive drive = Drive(driveStateChange);
-
 boolean sendUpdates = true;
+
+Link link = Link(handleError);
+Drive drive = Drive(driveStateChange);
 
 // TimedAction "thread" for the safety timer. Set to 1 second by default
 TimedAction timeoutAction = TimedAction(1000, timeout);
@@ -31,6 +28,12 @@ void setup() {
   // Adjust timer 1 for higher frequency PWM
   TCCR1B = TCCR1B & 0b11111000 | 0x01; // 31250 Hz
   Serial.begin(115200);
+  driveAction.disable();
+  link.setHandler(0x30, joystick_handler);
+  link.setHandler(0x40, calibration_handler);
+  link.setHandler(0x41, cal_request_handler);
+  link.setHandler(0x42, driveselect_handler);
+  link.setHandler(0xff, estop_handler);
   byte data[1] = {0x01};
   link.sendData(1, data); // Let the controller know we're here
   timeoutAction.disable(); // disable safety timer until needed
@@ -47,45 +50,9 @@ void serialEvent() {
   link.service();
 }
 
-void dispatch_packet(int length, byte* packet) {
-  byte len = packet[1] - 1; // we don't need the first payload byte
-  byte cmd = packet[2];
-  
-  byte *data = (byte*) malloc((len) * sizeof(byte));
-  
-  if (data == NULL) {
-    handleError(E_MALLOC);
-    return;
-  }
-  // copy only the payload to a new array
-  memcpy(data, packet + 3, len);
-  
-  switch (cmd) {
-    case CMD_JOYSTICK:
-      cmd_joystick(len, data);
-      break;
-    case CMD_CALIBRATE:
-      cmd_calibrate(len, data);
-      break;
-    case CMD_GET_CALIBRATION:
-      cmd_get_calibration();
-      break;
-    case CMD_SOFTSTOP:
-      // soft stop
-      drive.center();
-      break;
-    default:
-      handleError(E_WTF);
-      break;
-  }
-  free(data);
-}
-
-void cmd_joystick(int length, byte* data) {
+void joystick_handler(byte length, byte* data) {
   // Expects two signed 8-bit values, indicating the desired joystick
   // position relative to center.
-  // TODO: This really needs some way to limit output to a defined range,
-  //       as voltages outside 1-4V are detected as a joystick fault.
   char xpos = data[0];
   char ypos = data[1];
   
@@ -96,10 +63,9 @@ void cmd_joystick(int length, byte* data) {
   
   drive.setPosition(xpos, ypos);
   timeoutAction.reset();
-  return;
 }
 
-void cmd_calibrate(int length, byte* data) {
+void calibration_handler(byte length, byte* data) {
   switch (data[0]) {
     case 0x00:
       // Set x center
@@ -116,12 +82,25 @@ void cmd_calibrate(int length, byte* data) {
   }
 }
 
-void cmd_get_calibration() {
+void cal_request_handler(byte length, byte* data) {
   byte* values = drive.getCalibration();
-  byte data[5];
+  byte payload[5];
   data[0] = RESP_CALIBRATION;
   memcpy(data + 1, values, sizeof(byte) * 4);
   link.sendData(5, data);
+}
+
+void driveselect_handler(byte length, byte* data) {
+  if (data[0]) {
+    drive.enable();
+  }
+  else {
+    drive.disable();
+  }
+}
+
+void estop_handler(byte length, byte* data) {
+  drive.estop();
 }
 
 void timeout() {

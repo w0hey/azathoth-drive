@@ -29,6 +29,10 @@ class Drive {
     void eraseCalibration();
     void setPosition(char, char);
     void center();
+    void enable();
+    void disable();
+    void estop();
+    void reset();
     char* getPosition();
     byte* getRawPosition();
     byte* getCalibration();

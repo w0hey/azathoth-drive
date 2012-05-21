@@ -70,6 +70,28 @@ void Drive::center() {
   setPosition(0, 0);
 }
 
+void Drive::enable() {
+  digitalWrite(P_SELECT_OUT, HIGH);
+  status = status | STATUS_SELECT_OUT;
+}
+
+void Drive::disable() {
+  digitalWrite(P_SELECT_OUT, LOW);
+  status = status & (~STATUS_SELECT_OUT);
+}
+
+void Drive::estop() {
+  digitalWrite(P_ESTOP_OUT, HIGH);
+  status = status | STATUS_ESTOP_OUT;
+  center();
+}
+
+void Drive::reset() {
+  center();
+  digitalWrite(P_ESTOP_OUT, LOW);
+  status = status & (~STATUS_ESTOP_OUT);
+}
+
 // get the current simulated joystick position
 // returns a pointer to a two-element array
 char* Drive::getPosition() {
