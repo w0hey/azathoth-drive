@@ -28,6 +28,7 @@ void setup() {
   link.setHandler(0x40, calibration_handler);
   link.setHandler(0x41, cal_request_handler);
   link.setHandler(0x43, driveselect_handler);
+  link.setHandler(0xfe, reset_handler);
   link.setHandler(0xff, estop_handler);
   byte data[1] = {0x01};
   link.sendData(1, data); // Let the controller know we're here
@@ -92,6 +93,10 @@ void driveselect_handler(byte length, byte* data) {
   else {
     drive.disable();
   }
+}
+
+void reset_handler(byte length, byte* data) {
+  drive.reset();
 }
 
 void estop_handler(byte length, byte* data) {
