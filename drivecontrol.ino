@@ -64,12 +64,8 @@ void joystick_handler(byte length, byte* data) {
 void calibration_handler(byte length, byte* data) {
   switch (data[0]) {
     case 0x00:
-      // Set x center
-      drive.setXCenter(data[1]);
-      break;
-    case 0x01:
-      // set y center
-      drive.setYCenter(data[1]);
+      // Set center
+      drive.setCenter(data[1], data[2]);
       break;
     case 0x10:
       // Write calibration to EEPROM
@@ -87,11 +83,11 @@ void cal_request_handler(byte length, byte* data) {
 }
 
 void driveselect_handler(byte length, byte* data) {
-  if (data[0]) {
-    drive.enable();
+  if (data[0] == 0x01) {
+    drive.select(true);
   }
   else {
-    drive.disable();
+    drive.select(false);
   }
 }
 

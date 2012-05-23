@@ -5,6 +5,11 @@
 
 Drive::Drive(void (*func)()) {
   callback = func;
+  pinMode(P_SELECT_OUT, OUTPUT);
+  pinMode(P_ESTOP_OUT, OUTPUT);
+  // init to default state, manual control, e-stop inactive.
+  digitalWrite(P_SELECT_OUT, LOW);
+  digitalWrite(P_ESTOP_OUT, HIGH);
   status = 0;
   if (!readCalibration()) {
     x_center = X_DEFAULT;
@@ -18,15 +23,10 @@ Drive::Drive(void (*func)()) {
   analogWrite(P_JOY_Y, y_value);
 }
 
-// set X calibration offset
-void Drive::setXCenter(byte val) {
-  x_center = val;
-  center();
-}
-
-// set y calibration offset
-void Drive::setYCenter(byte val) {
-  y_center = val;
+// set calibration offsets
+void Drive::setCenter(byte xval, byte yval) {
+  x_center = xval;
+  y_center = yval;
   center();
 }
 
@@ -70,14 +70,15 @@ void Drive::center() {
   setPosition(0, 0);
 }
 
-void Drive::enable() {
-  digitalWrite(P_SELECT_OUT, HIGH);
-  status = status | STATUS_SELECT_OUT;
-}
-
-void Drive::disable() {
-  digitalWrite(P_SELECT_OUT, LOW);
-  status = status & (~STATUS_SELECT_OUT);
+void Drive::select(boolean enabled) {
+  if (enabled) {
+    digitalWrite(P_SELECT_OUT, HIGH);
+    status = status | STATUS_SELECT_OUT;
+  }
+  else {
+    digitalWrite(P_SELECT_OUT, LOW);
+    status = status & (~STATUS_SELECT_OUT);
+  }
 }
 
 void Drive::estop() {

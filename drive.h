@@ -23,14 +23,12 @@
 class Drive {
   public:
     Drive(void (*func)());
-    void setXCenter(byte);
-    void setYCenter(byte);
+    void setCenter(byte, byte);
     void storeCalibration();
     void eraseCalibration();
     void setPosition(char, char);
     void center();
-    void enable();
-    void disable();
+    void select(boolean);
     void estop();
     void reset();
     char* getPosition();
