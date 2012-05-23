@@ -51,8 +51,8 @@ void Drive::eraseCalibration() {
 // set simulated joystick position
 // char x, char y: desired position relative to center
 void Drive::setPosition(char x, char y) {
-  x_position = constrain(x, -70, 70);
-  y_position = constrain(y, -70, 70);
+  x_position = constrain(map(x, -128, 127, -70, 70), -70, 70);
+  y_position = constrain(map(y, -128, 127, -70, 70), -70, 70);
   x_value = x_center + x_position;
   y_value = y_center + y_position;
   analogWrite(P_JOY_X, x_value);
