@@ -29,7 +29,7 @@ void setup() {
   // Adjust timer 1 for higher frequency PWM
   TCCR1B = TCCR1B & 0b11111000 | 0x01; // 31250 Hz
   Serial.begin(115200);
-  driveAction.disable();
+  //driveAction.disable();
   link.setHandler(0x20, mode_handler);
   link.setHandler(0x30, joystick_handler);
   link.setHandler(0x40, calibration_handler);
