@@ -6,11 +6,17 @@
 #include "link.h"
 #include "drive.h"
 
+enum drivemode {
+  LOCAL,
+  REMOTE
+};
+
 #define RESP_CALIBRATION 0x41
 #define RESP_STATUS 0x42
 #define RESP_ERROR 0xEE
 
 boolean sendUpdates = true;
+drivemode mode = LOCAL;
 
 Link link = Link(handleError);
 Drive drive = Drive(driveStateChange);
@@ -24,6 +30,7 @@ void setup() {
   TCCR1B = TCCR1B & 0b11111000 | 0x01; // 31250 Hz
   Serial.begin(115200);
   driveAction.disable();
+  link.setHandler(0x20, mode_handler);
   link.setHandler(0x30, joystick_handler);
   link.setHandler(0x40, calibration_handler);
   link.setHandler(0x41, cal_request_handler);
@@ -44,6 +51,25 @@ void loop() {
 
 void serialEvent() {
   link.service();
+}
+
+void mode_handler(byte length, byte* data) {
+  switch (data[0]) {
+    case 0x00: // wheelchair mode
+      mode = LOCAL;
+      drive.center();
+      drive.estop();
+      drive.select(false);
+      drive.reset();
+      break;
+    case 0x01: // robot mode
+      mode = REMOTE;
+      drive.center();
+      drive.estop();
+      drive.select(true);
+      drive.reset();
+      break;
+  }
 }
 
 void joystick_handler(byte length, byte* data) {
