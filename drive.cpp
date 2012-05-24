@@ -59,9 +59,9 @@ void Drive::setPosition(char x, char y) {
   analogWrite(P_JOY_Y, y_value);
   // quick test to see if either value is nonzero
   if (x || y) {
-    status = status | STATUS_MOVING;
+    status |= STATUS_MOVING;
   } else {
-    status = status & (~STATUS_MOVING);
+    status &= ~STATUS_MOVING;
   }
 }
 
@@ -73,24 +73,24 @@ void Drive::center() {
 void Drive::select(boolean enabled) {
   if (enabled) {
     digitalWrite(P_SELECT_OUT, HIGH);
-    status = status | STATUS_SELECT_OUT;
+    status |= STATUS_SELECT_OUT;
   }
   else {
     digitalWrite(P_SELECT_OUT, LOW);
-    status = status & (~STATUS_SELECT_OUT);
+    status &= ~STATUS_SELECT_OUT;
   }
 }
 
 void Drive::estop() {
   digitalWrite(P_ESTOP_OUT, LOW);
-  status = status | STATUS_ESTOP_OUT;
+  status |= STATUS_ESTOP_OUT;
   center();
 }
 
 void Drive::reset() {
   center();
   digitalWrite(P_ESTOP_OUT, HIGH);
-  status = status & (~STATUS_ESTOP_OUT);
+  status &= ~STATUS_ESTOP_OUT;
 }
 
 // get the current simulated joystick position
@@ -122,14 +122,14 @@ void Drive::update() {
     status |= STATUS_ESTOP_IN;
   }
   else {
-    status &= (~STATUS_ESTOP_IN);
+    status &= ~STATUS_ESTOP_IN;
   }
   
   if (digitalRead(P_SELECT_IN) == HIGH) {
     status |= STATUS_SELECT_IN;
   }
   else {
-    status &= (~STATUS_SELECT_IN);
+    status &= ~STATUS_SELECT_IN;
   }
   
   if (status != prevstate) {
