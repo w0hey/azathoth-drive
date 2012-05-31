@@ -91,6 +91,7 @@ void Drive::reset() {
   setPosition(0, 0);
   digitalWrite(P_ESTOP_OUT, HIGH);
   status &= ~STATUS_ESTOP_OUT;
+  callback();
 }
 
 // get the current simulated joystick position
