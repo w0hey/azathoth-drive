@@ -7,6 +7,8 @@ Drive::Drive(void (*func)()) {
   callback = func;
   pinMode(P_SELECT_OUT, OUTPUT);
   pinMode(P_ESTOP_OUT, OUTPUT);
+  pinMode(P_SELECT_IN, INPUT);
+  pinMode(P_ESTOP_IN, INPUT);
   // init to default state, manual control, e-stop inactive.
   digitalWrite(P_SELECT_OUT, LOW);
   digitalWrite(P_ESTOP_OUT, HIGH);
@@ -21,13 +23,14 @@ Drive::Drive(void (*func)()) {
   y_value = y_center;
   analogWrite(P_JOY_X, x_value);
   analogWrite(P_JOY_Y, y_value);
+  //updateStatus();
 }
 
 // set calibration offsets
 void Drive::setCenter(byte xval, byte yval) {
   x_center = xval;
   y_center = yval;
-  center();
+  setPosition(0, 0);
 }
 
 // write calibration values to eeprom
@@ -63,11 +66,7 @@ void Drive::setPosition(char x, char y) {
   } else {
     status &= ~STATUS_MOVING;
   }
-}
-
-// return the simulated joystick to center
-void Drive::center() {
-  setPosition(0, 0);
+  callback();
 }
 
 void Drive::select(boolean enabled) {
@@ -79,16 +78,17 @@ void Drive::select(boolean enabled) {
     digitalWrite(P_SELECT_OUT, LOW);
     status &= ~STATUS_SELECT_OUT;
   }
+  callback();
 }
 
 void Drive::estop() {
   digitalWrite(P_ESTOP_OUT, LOW);
   status |= STATUS_ESTOP_OUT;
-  center();
+  setPosition(0, 0);
 }
 
 void Drive::reset() {
-  center();
+  setPosition(0, 0);
   digitalWrite(P_ESTOP_OUT, HIGH);
   status &= ~STATUS_ESTOP_OUT;
 }
@@ -118,17 +118,19 @@ byte Drive::getStatus() {
 // do some status checks
 void Drive::update() {
   byte prevstate = status;
-  if (digitalRead(P_ESTOP_IN) == HIGH) {
+  byte estop_in = digitalRead(P_ESTOP_IN);
+  byte select_in = digitalRead(P_SELECT_IN);
+  if (estop_in == HIGH) {
     status |= STATUS_ESTOP_IN;
   }
-  else {
+  else if (estop_in == LOW) {
     status &= ~STATUS_ESTOP_IN;
   }
   
-  if (digitalRead(P_SELECT_IN) == HIGH) {
+  if (select_in == HIGH) {
     status |= STATUS_SELECT_IN;
   }
-  else {
+  else if (select_in == LOW) {
     status &= ~STATUS_SELECT_IN;
   }
   

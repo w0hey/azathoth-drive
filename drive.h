@@ -27,7 +27,6 @@ class Drive {
     void storeCalibration();
     void eraseCalibration();
     void setPosition(char, char);
-    void center();
     void select(boolean);
     void estop();
     void reset();

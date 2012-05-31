@@ -57,14 +57,14 @@ void mode_handler(byte length, byte* data) {
   switch (data[0]) {
     case 0x00: // wheelchair mode
       mode = LOCAL;
-      drive.center();
+      drive.setPosition(0, 0);
       drive.estop();
       drive.select(false);
       drive.reset();
       break;
     case 0x01: // robot mode
       mode = REMOTE;
-      drive.center();
+      drive.setPosition(0, 0);
       drive.estop();
       drive.select(true);
       drive.reset();
@@ -126,7 +126,7 @@ void estop_handler(byte length, byte* data) {
 }
 
 void timeout() {
-  drive.center();
+  drive.setPosition(0, 0);
   handleError(E_TIMEOUT);
 }
 
