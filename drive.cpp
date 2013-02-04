@@ -51,8 +51,10 @@ void Drive::eraseCalibration() {
   EEPROM.write(ADDR_Y, 0xff);
 }
 
-// set simulated joystick position
-// char x, char y: desired position relative to center
+/* set simulated joystick position
+ * char x, char y: desired position relative to center
+ * sets status byte appropriately and calls the update callback
+ */
 void Drive::setPosition(char x, char y) {
   x_position = constrain(map(x, -128, 127, -70, 70), -70, 70);
   y_position = constrain(map(y, -128, 127, -70, 70), -70, 70);
@@ -69,6 +71,11 @@ void Drive::setPosition(char x, char y) {
   callback();
 }
 
+/* controls the drive select relay
+ * true: arduino has control of the motors
+ * false: onboard joystick has control of the motors
+ * sets status byte and calls the callback
+ */
 void Drive::select(boolean enabled) {
   if (enabled) {
     digitalWrite(P_SELECT_OUT, HIGH);
@@ -81,12 +88,16 @@ void Drive::select(boolean enabled) {
   callback();
 }
 
+// drops the e-stop relay, triggering an emergency stop
+// sets status byte and sets joystick output to 0,0
 void Drive::estop() {
   digitalWrite(P_ESTOP_OUT, LOW);
   status |= STATUS_ESTOP_OUT;
   setPosition(0, 0);
 }
 
+// pulls in the e-stop relay, returning the motors to normal operation
+// sets the status byte and calls the callback
 void Drive::reset() {
   setPosition(0, 0);
   digitalWrite(P_ESTOP_OUT, HIGH);
@@ -112,6 +123,7 @@ byte* Drive::getRawPosition() {
   return val;
 }
 
+// return the status byte
 byte Drive::getStatus() {
   return status;
 }
@@ -142,9 +154,10 @@ void Drive::update() {
 }
 
 
-// get the current calibration values
-// returns a pointer to a four-element array
-// { current x, current y, eeprom x, eeprom y }
+/* get the current calibration values
+ * returns a pointer to a four-element array
+ * { current x, current y, eeprom x, eeprom y }
+ */
 byte* Drive::getCalibration() {
   static byte val[4];
   val[0] = x_center;
@@ -154,6 +167,11 @@ byte* Drive::getCalibration() {
   return val;
 }
 
+/* attempt to read the stored calibration values from EEPROM
+ * and store them in variables.
+ * returns true if successful
+ * returns false if no valid values are stored
+ */
 boolean Drive::readCalibration() {
   if (EEPROM.read(ADDR_MAGIC) == EEPROM_MAGIC) {
     eeprom_x = EEPROM.read(ADDR_X);
